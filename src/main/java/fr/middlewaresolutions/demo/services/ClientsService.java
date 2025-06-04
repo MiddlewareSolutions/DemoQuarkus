@@ -21,6 +21,12 @@ public class ClientsService {
   @Inject ClientsRepository clientsRepository;
   @Inject ClientConverter clientConverter;
 
+  /**
+   * List all clients.
+   * @param page optional page.
+   * @param limit optional page limit.
+   * @return a list of clients.
+   */
   @GET
   @Produces("application/json")
   public Response listClients(
@@ -31,6 +37,11 @@ public class ClientsService {
     return Response.ok(clientConverter.toDtos(clients)).build();
   }
 
+  /**
+   * Get a client
+   * @param email email to fetch.
+   * @return 404 if not found.
+   */
   @GET
   @Path("/{email}")
   @Produces("application/json")
@@ -43,22 +54,33 @@ public class ClientsService {
     return Response.ok(clientConverter.toDto(client)).build();
   }
 
+  /**
+   * Create a client.
+   * @param dto DTO in the body.
+   * @return 409 if the DTO's email already exists.
+   */
   @POST
   @Consumes("application/json")
   @Transactional
-  public Response createClient(ClientDto clientDto) {
+  public Response createClient(ClientDto dto) {
     // Must not exist
-    if(clientsRepository.findByEmail(clientDto.getEmail()) != null) {
+    if(clientsRepository.findByEmail(dto.getEmail()) != null) {
       return Response.status(Response.Status.CONFLICT).build();
     }
 
-    Client client = clientConverter.toModel(clientDto);
+    Client client = clientConverter.toModel(dto);
     clientsRepository.persist(client);
     Log.info("Client with email " + client + " was created");
 
     return Response.status(Response.Status.CREATED).build();
   }
 
+  /**
+   * Update a client.
+   * @param email client identifier.
+   * @param dto DTO in the body.
+   * @return 400 if email changed. 404 if not found. 202 if ok.
+   */
   @POST
   @Path("/{email}")
   @Transactional
@@ -82,6 +104,11 @@ public class ClientsService {
     return Response.status(Response.Status.ACCEPTED).build();
   }
 
+  /**
+   * Delete a client.
+   * @param email email of the client to delete.
+   * @return 202. Will never return 404.
+   */
   @DELETE
   @Path("/{email}")
   @Transactional
