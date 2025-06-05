@@ -83,6 +83,7 @@ public class ClientsService {
    */
   @POST
   @Path("/{email}")
+  @Consumes("application/json")
   @Transactional
   public Response updateClient(@PathParam("email") String email, ClientDto dto) {
     // Emails must match
